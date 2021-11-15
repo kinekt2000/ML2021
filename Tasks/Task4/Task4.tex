@@ -1,0 +1,367 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usepackage{wrapfig}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{forest}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{enumitem}
+\usepackage{multirow}
+
+\usetikzlibrary{positioning, shapes}
+%-------------------------------------------
+
+\setlength{\textwidth}{7.0in}
+\setlength{\oddsidemargin}{-0.35in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\textheight}{9.0in}
+\setlength{\parindent}{0.3in}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{task}[theorem]{Задача}
+\addto\captionsrussian{\renewcommand*{\proofname}{Решение}}
+
+\DeclareMathOperator{\LB}{LB}
+\DeclareMathOperator{\UB}{UB}
+
+\begin{document}
+\begin{flushright}
+\textbf{
+  ЛЭТИ, гр. 8303, Гришин Константин \\
+  \today
+}
+\end{flushright}
+
+\begin{center}
+\textbf{Машинное обучение} \\
+\textbf{Практические задания №4}             \\
+\end{center}
+
+\begin{task}
+  Дан набор данных
+
+  \begin{center}
+    \begin{tabular}{|c|c|c|}
+      \hline
+      Tid & Itemset \\
+      \hline
+      1 & ACD \\
+      2 & BCD \\
+      3 & AC \\
+      4 & ABD \\
+      5 & ABCD \\
+      6 & BCD \\
+      \hline
+    \end{tabular}
+  \end{center}
+
+  Найдите все минимальные генераторы для минимального уровня поддержки = 1.
+
+  Множество является минимальным генератором, когда оно не имеет подмножеств
+  с тем же уровнем поддержки.
+\end{task}
+
+\begin{proof}
+  Построим решетку наборов и их частот.
+  \begin{center}
+    \begin{tikzpicture}[
+      x=30mm, y=20mm,
+      plain/.style = {draw=none, fill=none},
+      round/.style = {draw, ellipse}
+    ]
+      \node[plain] (empty) at (2.5, 4) {$\emptyset(6)$};
+      \node[plain] (ABCD)  at (2.5, 0) {$ABCD(1)$};
+      
+      \node[round] (A)     at (1, 3)   {$A(4)$};
+      \node[round] (B)     at (2, 3)   {$B(4)$};
+      \node[round] (C)     at (3, 3)   {$C(5)$};
+      \node[round] (D)     at (4, 3)   {$D(5)$};
+
+      \node[round] (AB)    at (0, 2)   {$AB(2)$};
+      \node[round] (AC)    at (1, 2)   {$AC(3)$};
+      \node[round] (AD)    at (2, 2)   {$AD(3)$};
+      \node[round] (BC)    at (3, 2)   {$BC(3)$};
+      \node[plain] (BD)    at (4, 2)   {$BD(4)$};
+      \node[round] (CD)    at (5, 2)   {$CD(4)$};
+
+      \node[round] (ABC)   at (1, 1)   {$ABC(1)$};
+      \node[plain] (ABD)   at (2, 1)   {$ABD(2)$};
+      \node[round] (ACD)   at (3, 1)   {$ACD(2)$};
+      \node[plain] (BCD)   at (4, 1)   {$BCD(3)$};
+
+      \draw (empty) -- (A);
+      \draw (empty) -- (B);
+      \draw (empty) -- (C);
+      \draw (empty) -- (D);
+
+      \draw (A) -- (AB); \draw (A) -- (AC); \draw (A) -- (AD);
+      \draw (B) -- (AB); \draw (B) -- (BC); \draw (B) -- (BD) [ultra thick];
+      \draw (C) -- (AC); \draw (C) -- (BC); \draw (C) -- (CD);
+      \draw (D) -- (AD); \draw (D) -- (BD); \draw (D) -- (CD);
+
+      \draw (ABC) -- (AB); \draw (ABC) -- (AC); \draw (ABC) -- (BC);
+      \draw (ABD) -- (AD); \draw (ABD) -- (BD); \draw (ABD) -- (AB) [ultra thick];
+      \draw (ACD) -- (AC); \draw (ACD) -- (AD); \draw (ACD) -- (CD);
+      \draw (BCD) -- (BD); \draw (BCD) -- (CD); \draw (BCD) -- (BC) [ultra thick]; 
+
+      \draw (ABCD) -- (ABC);
+      \draw (ABCD) -- (ABD);
+      \draw (ABCD) -- (ACD) [ultra thick];
+      \draw (ABCD) -- (BCD);
+    \end{tikzpicture}
+  \end{center}
+
+  Наборы, которые являются минимальными генераторами обведены.
+  Жирным выделены ребра, которые указывают на подмножества с такой же поддержкой.
+  Множество минимальных генераторов: $\{A, B, C, D, AB, AC, AD, BC, CD, ABC, ACD\}$.
+\end{proof}
+\clearpage
+
+\begin{task}
+  Дана решетка наборов и их частоты.
+  \begin{center}
+    \begin{tikzpicture}[
+      x=30mm, y=20mm,
+      vertex/.style = {draw, ellipse},
+      filled/.style = {draw, ellipse, fill=black!10}
+    ]
+      \node[vertex] (empty) at (2.5, 4) {$\emptyset(6)$};
+      \node[filled] (ABCD)  at (2.5, 0) {$ABCD(1)$};
+      
+      \node[filled] (A)     at (1, 3)   {$A(6)$};
+      \node[vertex] (B)     at (2, 3)   {$B(5)$};
+      \node[vertex] (C)     at (3, 3)   {$C(4)$};
+      \node[vertex] (D)     at (4, 3)   {$D(3)$};
+
+      \node[filled] (AB)    at (0, 2)   {$AB(5)$};
+      \node[filled] (AC)    at (1, 2)   {$AC(4)$};
+      \node[filled] (AD)    at (2, 2)   {$AD(3)$};
+      \node[vertex] (BC)    at (3, 2)   {$BC(3)$};
+      \node[vertex] (BD)    at (4, 2)   {$BD(2)$};
+      \node[vertex] (CD)    at (5, 2)   {$CD(2)$};
+
+      \node[filled] (ABC)   at (1, 1)   {$ABC(3)$};
+      \node[filled] (ABD)   at (2, 1)   {$ABD(2)$};
+      \node[filled] (ACD)   at (3, 1)   {$ACD(2)$};
+      \node[vertex] (BCD)   at (4, 1)   {$BCD(1)$};
+
+      \draw (empty) -- (A) [ultra thick];
+      \draw (empty) -- (B);
+      \draw (empty) -- (C);
+      \draw (empty) -- (D);
+
+      \draw (A) -- (AB); \draw (A) -- (AC); \draw (A) -- (AD);
+      \draw (B) -- (AB) [ultra thick]; \draw (B) -- (BC); \draw (B) -- (BD);
+      \draw (C) -- (AC) [ultra thick]; \draw (C) -- (BC); \draw (C) -- (CD);
+      \draw (D) -- (AD) [ultra thick]; \draw (D) -- (BD); \draw (D) -- (CD);
+
+      \draw (ABC) -- (AB); \draw (ABC) -- (AC); \draw (ABC) -- (BC) [ultra thick];
+      \draw (ABD) -- (AD); \draw (ABD) -- (BD) [ultra thick]; \draw (ABD) -- (AB);
+      \draw (ACD) -- (AC); \draw (ACD) -- (AD); \draw (ACD) -- (CD) [ultra thick];
+      \draw (BCD) -- (BD); \draw (BCD) -- (CD); \draw (BCD) -- (BC); 
+
+      \draw (ABCD) -- (ABC);
+      \draw (ABCD) -- (ABD);
+      \draw (ABCD) -- (ACD);
+      \draw (ABCD) -- (BCD) [ultra thick];
+    \end{tikzpicture}
+  \end{center}
+
+  Выполните следущие задания:
+  \begin{enumerate}[label=\Alph*., leftmargin=4\parindent]
+    \item Выпишите список всех замкнутых наборов (closed itemsets).
+    Множество замкнутое, когда нет надмножеств с тем же уровнем поддержки.
+    \item Является ли набор BCD выводимым? Является ли набор ABCD выводимым?
+    Какие границы их поддержки? 
+  \end{enumerate}
+\end{task}
+
+\begin{proof} \hfill
+  \begin{enumerate}[label=\Alph*.]
+    \item На графе выделены ребра, которые ведут кнадмножествам с
+    такой же поддержкой.\\
+    Множество замкнутых наборов:
+    $\{A, AB, AC, AD, ABC, ABD, ACD, ABCD\}$.
+    \item
+    \renewcommand{\arraystretch}{1.5} \begin{tabular}[t]{|c|c|c|}
+      \hline
+      \multirow{8}{*}{\(sup(BCD)\)}
+      & $\ge 0$           & $Y = BCD$ \\\cline{2-3}
+      & $\le sup(BC) = 3$ & $Y = BC$ \\\cline{2-3}
+      & $\le sup(BD) = 2$ & $Y = BD$ \\\cline{2-3}
+      & $\le sup(CD) = 2$ & $Y = CD$ \\\cline{2-3}
+      & $\ge sup(BC) + sup(BD) - sup(B) = 0$ & $Y = B$ \\\cline{2-3}
+      & $\ge sup(BC) + sup(CD) - sup(C) = 0$ & $Y = C$ \\\cline{2-3}
+      & $\ge sup(BD) + sup(CD) - sup(D) = 0$ & $Y = D$ \\\cline{2-3}
+      & $\begin{array}{lcl} \le sup(BC) + sup(BD) + sup(CD) - \\
+        -sup(B) - sup(C) - sup(D) + sup(\emptyset) = 1\end{array}$ & $Y = \emptyset$ \\
+      \hline
+    \end{tabular}
+    \renewcommand{\arraystretch}{1}
+
+    $\LB(BCD)=\{0, 1\}, \UB(BCD)=\{1, 2, 3\}$
+
+    $\max(\LB(BCD)) = \min(\UB(BCD)) = 1, \Rightarrow$ набор выводим.
+
+    \renewcommand{\arraystretch}{1.5} \begin{tabular}[t]{|c|c|c|}
+      \hline
+      \multirow{16}{*}{\(sup(ABCD)\)}
+      & $\ge 0$            & $Y = ABCD$ \\\cline{2-3}
+
+      & $\le sup(ABC) = 3$ & $Y = ABC$ \\\cline{2-3}
+      & $\le sup(ABD) = 2$ & $Y = ABD$ \\\cline{2-3}
+      & $\le sup(ACD) = 2$ & $Y = ACD$ \\\cline{2-3}
+      & $\le sup(BCD) = 1$ & $Y = BCD$ \\\cline{2-3}
+      
+      & $\ge sup(ABC) + sup(ABD) - sup(AB) = 0$ & $Y = AB$ \\\cline{2-3}
+      & $\ge sup(ABC) + sup(ACD) - sup(AC) = 1$ & $Y = AC$ \\\cline{2-3}
+      & $\ge sup(ABD) + sup(ACD) - sup(AD) = 1$ & $Y = AD$ \\\cline{2-3}
+      & $\ge sup(ABC) + sup(BCD) - sup(BC) = 1$ & $Y = BC$ \\\cline{2-3}
+      & $\ge sup(ABD) + sup(BCD) - sup(BD) = 1$ & $Y = BD$ \\\cline{2-3}
+      & $\ge sup(ACD) + sup(VCD) - sup(CD) = 1$ & $Y = CD$ \\\cline{2-3}
+      
+      & $\begin{array}{lcl} \le sup(ABC) + sup(ABD) + sup(ACD) - \\
+        -sup(AB) - sup(AC) - sup(AD) + sup(A) = 1\end{array}$ & $Y = A$ \\\cline{2-3}
+      
+      & $\begin{array}{lcl} \le sup(ABC) + sup(ABD) + sup(BCD) - \\
+        -sup(AB) - sup(BC) - sup(BD) + sup(B) = 1\end{array}$ & $Y = B$ \\\cline{2-3}
+      
+      & $\begin{array}{lcl} \le sup(ABC) + sup(ACD) + sup(BCD) - \\
+        -sup(AC) - sup(BC) - sup(CD) + sup(C) = 1\end{array}$ & $Y = C$ \\\cline{2-3}
+      
+      & $\begin{array}{lcl} \le sup(ABD) + sup(ACD) + sup(BCD) - \\
+        -sup(AD) - sup(BD) - sup(CD) + sup(D) = 1\end{array}$ & $Y = D$ \\\cline{2-3}
+
+      & $\begin{array}{lcl} \ge sup(ABC) + sup(ABD) + sup(ACD) + sup(BCD) - \\
+        -sup(AB) - sup(AC) - sup(AD) - sup(BC) - \\
+        -sup(BD) -sup(CD) + sup(A) + sup(B) + sup(C) + \\
+        +sup(D) -sup(\emptyset) = 1\end{array}$ & $Y = \emptyset$ \\
+      \hline
+    \end{tabular}
+    \renewcommand{\arraystretch}{1}
+    
+    $\LB(ABCD)=\{0, 1\}, \UB(ABCD)=\{1, 2, 3\}$
+
+    $\max(\LB(ABCD)) = \min(\UB(ABCD)) = 1, \Rightarrow$ набор выводим.
+  \end{enumerate}
+\end{proof}
+\clearpage
+
+\begin{task}
+  Для алфавита $\{A, C, G, T\}$ посчитайте, сколько всего может быть разных
+  последовательностей длины k. \\
+  Даны последовательности
+  \begin{center}
+    \begin{tabular}{|c|c|}
+      \hline
+      Id & Sequence \\
+      \hline
+      $s_1$ & AATACAAGAAC \\
+      $s_2$ & GTATGGTGAT \\
+      $s_3$ & AACATGGCCAA \\
+      $s_4$ & AAGCGTGGTCAA \\
+      \hline
+    \end{tabular}
+  \end{center}
+  Найдите все подпоследовательности с минимальным уровнем поддержки = 4.
+\end{task}
+
+\begin{proof}
+  Возможных последовательностей длины k может быть $4^k$.
+
+  Для поиска всех подпоследовательностей построим деревья,
+  где каждое следующее дерево является продолжением предыдущего.
+
+  \begin{center}
+    \begin{forest}
+      [$\emptyset$
+        [A(4)] [\textbf{C(3)}] [G(4)] [T(4)]
+      ]
+    \end{forest}
+
+    \begin{forest}
+      [$\emptyset$
+        [A(4)
+          [AA(4)] [AG(4)] [AT(4)]
+        ]
+        [G(4)
+          [GA(4)] [\textbf{GG(3)}] [\textbf{GT(2)}]
+        ]
+        [T(4)
+          [TA(4)] [TG(4)] [\textbf{TT(2)}]
+        ]
+      ]
+    \end{forest}
+
+    \begin{forest}
+      [$\emptyset$
+        [A(4)
+          [AA(4)
+            [\textbf{AAA(3)}] [\textbf{AAG(3)}] [AAT(4)]
+          ]
+          [AG(4)
+            [AGA(4)]
+          ]
+          [AT(4)
+            [ATA(4)] [ATG(4)]
+          ]
+        ]
+        [G(4)
+          [GA(4)
+            [GAA(4)]
+          ]
+        ]
+        [T(4)
+          [TA(4)
+            [TAA(4)]
+          ]
+          [TG(4)
+            [TGA(4)]
+          ]
+        ]
+      ]
+    \end{forest}
+
+    \begin{forest}
+      [$\emptyset$
+        [A(4)
+          [AA(4)
+            [AAT(4)]
+          ]
+          [AG(4)
+            [AGA(4)]
+          ]
+          [AT(4)
+            [ATA(4)]
+            [ATG(4)
+              [ATGA(4)]
+            ]
+          ]
+        ]
+        [G(4)
+          [GA(4)
+            [GAA(4)]
+          ]
+        ]
+        [T(4)
+          [TA(4)
+            [TAA(4)]
+          ]
+          [TG(4)
+            [TGA(4)
+              [\textbf{TGAA(3)}]
+            ]
+          ]
+        ]
+      ]
+    \end{forest}
+  \end{center}
+\end{proof}
+
+\end{document}
